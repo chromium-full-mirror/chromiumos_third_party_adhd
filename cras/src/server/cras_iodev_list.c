@@ -1958,9 +1958,12 @@ static int set_node_volume(struct cras_iodev *iodev, unsigned int node_idx,
 {
 	struct cras_ionode *node;
 
-	node = find_node(iodev, node_idx);
-	if (!node)
-		return -EINVAL;
+        node = find_node(iodev, node_idx);
+        if (!node || volume < 0 || volume > 100) {
+            syslog(LOG_WARNING, "Invalid input: node == null: %d, volume: %d",
+                   node == NULL, volume);
+            return -EINVAL;
+        }
 
 	if (iodev->ramp && cras_iodev_software_volume_needed(iodev) &&
 	    !cras_system_get_mute())
