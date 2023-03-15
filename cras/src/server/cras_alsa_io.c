@@ -639,7 +639,7 @@ static int get_buffer(struct cras_iodev *iodev, struct cras_audio_area **area,
 		memcpy(aio->sample_buf, aio->mmap_buf,
 		       iodev->area->frames * format_bytes);
 	}
-
+	cras_audio_area_config_buf_pointers(iodev->area, iodev->format, aio->sample_buf);
 	*area = iodev->area;
 	*frames = nframes;
 

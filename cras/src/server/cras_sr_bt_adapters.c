@@ -130,7 +130,7 @@ cras_iodev_sr_bt_adapter_propagate(struct cras_iodev_sr_bt_adapter *adapter,
 
 	rc = iodev->put_buffer(iodev, used_frames);
 	if (rc != 0) {
-		syslog(LOG_WARNING, "aio->put_buffer return non-zero code %d",
+		syslog(LOG_WARNING, "iodev->put_buffer return non-zero code %d",
 		       rc);
 		return rc;
 	}
