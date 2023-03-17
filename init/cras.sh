@@ -12,7 +12,8 @@ board_name="$(cros_config /arc/build-properties product)"
 cpu_model_name="$( \
   cat /proc/cpuinfo \
   | grep -i 'model name' -m 1 \
-  | sed 's/model name[ \t]*:[ \t]*//')"
+  | sed 's/model name[ \t]*:[ \t]*//' \
+  | sed 's/\ /_/g')"
 
 # Handle legacy config.
 if [ -z "${device_config_dir}" ]; then
