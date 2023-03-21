@@ -198,6 +198,7 @@ void cras_system_state_init(const char *device_config_dir, const char *shm_name,
 		board_config.max_internal_speaker_channels;
 	exp_state->max_headphone_channels = board_config.max_headphone_channels;
 	exp_state->num_non_chrome_output_streams = 0;
+	exp_state->nc_standalone_mode = board_config.nc_standalone_mode;
 
 	if ((rc = pthread_mutex_init(&state.update_lock, 0) != 0)) {
 		syslog(LOG_ERR, "Fatal: system state mutex init");
@@ -907,4 +908,9 @@ bool cras_system_state_get_speak_on_mute_detection_enabled()
 int cras_system_state_num_non_chrome_output_streams()
 {
 	return state.exp_state->num_non_chrome_output_streams;
+}
+
+bool cras_system_get_noise_cancellation_standalone_mode()
+{
+	return !!state.exp_state->nc_standalone_mode;
 }
