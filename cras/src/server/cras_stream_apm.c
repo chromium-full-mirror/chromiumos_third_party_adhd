@@ -308,7 +308,7 @@ static bool toggle_dsp_effect(struct cras_iodev *const idev, uint64_t effect,
 	/* Toggle the DSP effect if it is not activated according to what is
 	 * specified. */
 	if (dsp_effect_activated != should_be_activated) {
-		syslog(LOG_ERR,
+		syslog(LOG_DEBUG,
 		       "cras_iodev_set_rtc_proc_enabled DSP effect %u=%d",
 		       (uint32_t)effect, should_be_activated ? 1 : 0);
 		cras_iodev_set_rtc_proc_enabled(idev, effect,
