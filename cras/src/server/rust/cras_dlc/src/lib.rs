@@ -17,7 +17,7 @@ use system_api::dlcservice::DlcState_State;
 use system_api::dlcservice::InstallRequest;
 use thiserror::Error;
 
-const DBUS_TIMEOUT: Duration = Duration::from_secs(3);
+const DBUS_TIMEOUT: Duration = Duration::from_millis(500);
 
 #[derive(Error, Debug)]
 enum Error {
