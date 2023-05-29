@@ -29,6 +29,8 @@ static const int32_t MAX_INTERNAL_SPK_CHANNELS_DEFAULT = 2;
 // MAX_HEADPHONE_CHANNELS_DEFAULT applied to both headphone and lineout.
 static const int32_t MAX_HEADPHONE_CHANNELS_DEFAULT = 2;
 static const int32_t NC_STANDALONE_MODE_DEFAULT = 0;
+static const int32_t USING_DEFAULT_VOLUME_CURVE_FOR_USB_AUDIO_DEVICE_DEFAULT =
+	0;
 
 #define CONFIG_NAME "board.ini"
 #define DEFAULT_OUTPUT_BUF_SIZE_INI_KEY "output:default_output_buffer_size"
@@ -51,6 +53,8 @@ static const int32_t NC_STANDALONE_MODE_DEFAULT = 0;
 #define MAX_INTERNAL_SPK_CHANNELS_INI_KEY "output:max_internal_speaker_channels"
 #define MAX_HEADPHONE_CHANNELS_INI_KEY "output:max_headphone_channels"
 #define NC_STANDALONE_MODE_INI_KEY "processing:nc_standalone_mode"
+#define USING_DEFAULT_VOLUME_CURVE_FOR_USB_AUDIO_DEVICE                        \
+	"usb:using_default_volume_curve_for_usb_audio_device"
 
 void cras_board_config_get(const char* config_path,
                            struct cras_board_config* board_config) {
@@ -80,6 +84,8 @@ void cras_board_config_get(const char* config_path,
       MAX_INTERNAL_SPK_CHANNELS_DEFAULT;
   board_config->max_headphone_channels = MAX_HEADPHONE_CHANNELS_DEFAULT;
   board_config->nc_standalone_mode = NC_STANDALONE_MODE_DEFAULT;
+  board_config->using_default_volume_curve_for_usb_audio_device =
+      USING_DEFAULT_VOLUME_CURVE_FOR_USB_AUDIO_DEVICE_DEFAULT;
   if (config_path == NULL) {
     return;
   }
@@ -192,6 +198,14 @@ void cras_board_config_get(const char* config_path,
   ini_key[MAX_INI_KEY_LENGTH] = 0;
   board_config->nc_standalone_mode =
       iniparser_getint(ini, ini_key, NC_STANDALONE_MODE_DEFAULT);
+
+  snprintf(ini_key, MAX_INI_KEY_LENGTH,
+      USING_DEFAULT_VOLUME_CURVE_FOR_USB_AUDIO_DEVICE);
+  ini_key[MAX_INI_KEY_LENGTH] = 0;
+  board_config->using_default_volume_curve_for_usb_audio_device =
+      iniparser_getint(
+              ini, ini_key,
+              USING_DEFAULT_VOLUME_CURVE_FOR_USB_AUDIO_DEVICE_DEFAULT);
 
   iniparser_freedict(ini);
   syslog(LOG_DEBUG, "Loaded ini file %s", ini_name);
