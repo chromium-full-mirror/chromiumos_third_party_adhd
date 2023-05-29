@@ -33,6 +33,7 @@ struct cras_board_config {
   int32_t max_internal_speaker_channels;
   int32_t max_headphone_channels;
   int32_t speaker_output_latency_offset_ms;
+  int32_t using_default_volume_curve_for_usb_audio_device;
 };
 
 /* Gets a configuration based on the config file specified.

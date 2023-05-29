@@ -154,6 +154,7 @@ static int sys_get_max_internal_speaker_channels_called;
 static int sys_get_max_internal_speaker_channels_return_value;
 static int sys_get_max_headphone_channels_called = 0;
 static int sys_get_max_headphone_channels_return_value = 2;
+static int sys_using_default_volume_curve_for_usb_audio_device_value;
 static int cras_iodev_update_underrun_duration_called = 0;
 static bool testing_channel_retry = false;
 static struct cras_board_config fake_board_config;
@@ -253,6 +254,7 @@ void ResetStubData() {
   sys_get_max_internal_speaker_channels_return_value = 2;
   sys_get_max_headphone_channels_called = 0;
   sys_get_max_headphone_channels_return_value = 2;
+  sys_using_default_volume_curve_for_usb_audio_device_value = 0;
   cras_iodev_update_underrun_duration_called = 0;
   testing_channel_retry = false;
   memset(&fake_board_config, 0, sizeof(fake_board_config));
@@ -2940,6 +2942,10 @@ bool cras_system_get_noise_cancellation_enabled() {
 
 int cras_system_aec_on_dsp_supported() {
   return sys_aec_on_dsp_supported_return_value;
+}
+
+int cras_system_get_using_default_volume_curve_for_usb_audio_device() {
+  return sys_using_default_volume_curve_for_usb_audio_device_value;
 }
 
 //  From cras_alsa_mixer.
