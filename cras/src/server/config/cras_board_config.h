@@ -25,6 +25,7 @@ struct cras_board_config {
 	int32_t ns_on_dsp_supported;
 	int32_t agc_on_dsp_supported;
 	int32_t max_internal_mic_gain;
+	int32_t using_default_volume_curve_for_usb_audio_device;
 };
 
 /* Gets a configuration based on the config file specified.

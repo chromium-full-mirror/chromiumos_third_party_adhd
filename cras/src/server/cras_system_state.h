@@ -184,6 +184,10 @@ bool cras_system_get_hw_echo_ref_disabled();
 /* Returns the maximum internal mic gain. */
 int cras_system_get_max_internal_mic_gain();
 
+// Returns the whether we should apply default volume curve on all usb audio
+// device.
+int cras_system_get_using_default_volume_curve_for_usb_audio_device();
+
 /* Adds a card at the given index to the system.  When a new card is found
  * (through a udev event notification) this will add the card to the system,
  * causing its devices to become available for playback/capture.

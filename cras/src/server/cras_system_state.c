@@ -59,6 +59,8 @@ struct name_list {
  *    main_thread_tid - The thread id of the main thread.
  *    bt_fix_a2dp_packet_size - The flag to override A2DP packet size set by
  *      Blueetoh peer devices to a smaller default value.
+ *    using_default_volume_curve_for_usb_audio_device - use default volume curve
+ *      for a USB device instead of the range reported by the device.
  */
 static struct {
 	struct cras_server_state *exp_state;
@@ -84,6 +86,7 @@ static struct {
 	struct cras_audio_thread_snapshot_buffer snapshot_buffer;
 	pthread_t main_thread_tid;
 	bool bt_fix_a2dp_packet_size;
+	int32_t using_default_volume_curve_for_usb_audio_device;
 } state;
 
 /* The string format is CARD1,CARD2,CARD3. Divide it into a list. */
@@ -212,6 +215,8 @@ void cras_system_state_init(const char *device_config_dir, const char *shm_name,
 	state.main_thread_tid = pthread_self();
 
 	state.bt_fix_a2dp_packet_size = false;
+	state.using_default_volume_curve_for_usb_audio_device =
+		board_config.using_default_volume_curve_for_usb_audio_device;
 }
 
 void cras_system_state_set_internal_ucm_suffix(const char *internal_ucm_suffix)
@@ -625,6 +630,11 @@ void cras_system_rm_select_fd(int fd)
 {
 	if (state.fd_rm != NULL)
 		state.fd_rm(fd, state.select_data);
+}
+
+int cras_system_get_using_default_volume_curve_for_usb_audio_device()
+{
+	return state.using_default_volume_curve_for_usb_audio_device;
 }
 
 void cras_system_state_stream_added(enum CRAS_STREAM_DIRECTION direction,

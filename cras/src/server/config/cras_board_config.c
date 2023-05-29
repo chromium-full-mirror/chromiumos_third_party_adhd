@@ -24,6 +24,8 @@ static const int32_t BLUETOOTH_HFP_OFFLOAD_FINCH_APPLIED_INI_DEFAULT = 0;
 static const int32_t BLUETOOTH_DEPRIORITIZE_WBS_MIC_INI_DEFAULT = 0;
 static const int32_t HOTWORD_PAUSE_AT_SUSPEND_DEFAULT = 0;
 static const int32_t MAX_INTERNAL_MIC_GAIN_DEFAULT = 2000;
+static const int32_t USING_DEFAULT_VOLUME_CURVE_FOR_USB_AUDIO_DEVICE_DEFAULT =
+	0;
 
 #define CONFIG_NAME "board.ini"
 #define DEFAULT_OUTPUT_BUF_SIZE_INI_KEY "output:default_output_buffer_size"
@@ -43,6 +45,8 @@ static const int32_t MAX_INTERNAL_MIC_GAIN_DEFAULT = 2000;
 #define UCM_IGNORE_SUFFIX_KEY "ucm:ignore_suffix"
 #define HOTWORD_PAUSE_AT_SUSPEND "hotword:pause_at_suspend"
 #define MAX_INTERNAL_MIC_GAIN "input:max_internal_mic_gain"
+#define USING_DEFAULT_VOLUME_CURVE_FOR_USB_AUDIO_DEVICE                        \
+	"usb:using_default_volume_curve_for_usb_audio_device"
 
 void cras_board_config_get(const char *config_path,
 			   struct cras_board_config *board_config)
@@ -69,6 +73,9 @@ void cras_board_config_get(const char *config_path,
 	board_config->deprioritize_bt_wbs_mic =
 		BLUETOOTH_DEPRIORITIZE_WBS_MIC_INI_DEFAULT;
 	board_config->max_internal_mic_gain = MAX_INTERNAL_MIC_GAIN_DEFAULT;
+	board_config->using_default_volume_curve_for_usb_audio_device =
+		USING_DEFAULT_VOLUME_CURVE_FOR_USB_AUDIO_DEVICE_DEFAULT;
+
 	if (config_path == NULL)
 		return;
 
@@ -166,6 +173,14 @@ void cras_board_config_get(const char *config_path,
 	ini_key[MAX_INI_KEY_LENGTH] = 0;
 	board_config->max_internal_mic_gain =
 		iniparser_getint(ini, ini_key, MAX_INTERNAL_MIC_GAIN_DEFAULT);
+
+	snprintf(ini_key, MAX_INI_KEY_LENGTH,
+		 USING_DEFAULT_VOLUME_CURVE_FOR_USB_AUDIO_DEVICE);
+	ini_key[MAX_INI_KEY_LENGTH] = 0;
+	board_config->using_default_volume_curve_for_usb_audio_device =
+		iniparser_getint(
+			ini, ini_key,
+			USING_DEFAULT_VOLUME_CURVE_FOR_USB_AUDIO_DEVICE_DEFAULT);
 
 	iniparser_freedict(ini);
 	syslog(LOG_DEBUG, "Loaded ini file %s", ini_name);
