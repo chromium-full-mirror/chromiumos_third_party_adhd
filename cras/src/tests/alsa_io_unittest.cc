@@ -153,6 +153,7 @@ static bool sys_get_noise_cancellation_supported_return_value;
 static int sys_aec_on_dsp_supported_return_value;
 static int ucm_node_echo_cancellation_exists_ret_value;
 static bool sys_bypass_block_noise_cancellation_value;
+static int sys_using_default_volume_curve_for_usb_audio_device_value;
 
 void cras_dsp_set_variable_integer(struct cras_dsp_context* ctx,
                                    const char* key,
@@ -245,6 +246,7 @@ void ResetStubData() {
   sys_aec_on_dsp_supported_return_value = 0;
   ucm_node_echo_cancellation_exists_ret_value = 0;
   sys_bypass_block_noise_cancellation_value = false;
+  sys_using_default_volume_curve_for_usb_audio_device_value = 0;
 }
 
 static long fake_get_dBFS(const struct cras_volume_curve* curve,
@@ -2717,6 +2719,10 @@ int cras_system_aec_on_dsp_supported() {
 
 void cras_system_set_bypass_block_noise_cancellation(bool bypass) {
   sys_bypass_block_noise_cancellation_value = bypass;
+}
+
+int cras_system_get_using_default_volume_curve_for_usb_audio_device() {
+  return sys_using_default_volume_curve_for_usb_audio_device_value;
 }
 
 //  From cras_alsa_mixer.
