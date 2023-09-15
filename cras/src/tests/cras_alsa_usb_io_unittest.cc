@@ -1343,4 +1343,8 @@ int clock_gettime(clockid_t clk_id, struct timespec* tp) {
   return 0;
 }
 
+int cras_system_get_using_default_volume_curve_for_usb_audio_device() {
+  return 0;
+}
+
 }  // extern "C"
