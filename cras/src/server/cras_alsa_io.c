@@ -1197,7 +1197,7 @@ static struct alsa_output_node* new_output(struct alsa_io* aio,
   curve = cras_card_config_get_volume_curve_for_control(
       aio->config,
       name ? name : cras_alsa_mixer_get_control_name(cras_control));
-  if (!curve) {
+  if (!curve && aio->card_type == ALSA_CARD_TYPE_USB) {
     cras_alsa_mixer_get_playback_dBFS_range(aio->mixer, cras_control,
                                             &max_volume, &min_volume);
     syslog(LOG_DEBUG, "%s's output volume range: [%ld %ld]", name, min_volume,
