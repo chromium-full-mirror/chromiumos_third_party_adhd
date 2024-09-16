@@ -1774,8 +1774,7 @@ static void finalize_volume_settings(struct alsa_usb_output_node* output,
       usb_create_volume_curve_for_output(aio->common.config, output);
   /* if we finally decide to use HW volume and no volume curve in cras config,
    * create volume curve. */
-  if (!output->volume_curve && !node->software_volume_needed &&
-      !cras_system_get_using_default_volume_curve_for_usb_audio_device()) {
+  if (!output->volume_curve && !node->software_volume_needed) {
     output->volume_curve = cras_volume_curve_create_simple_step(0, max - min);
   }
 
