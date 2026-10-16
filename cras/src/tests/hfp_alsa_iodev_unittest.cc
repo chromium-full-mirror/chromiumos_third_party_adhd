@@ -384,9 +384,13 @@ TEST_F(HfpAlsaIodev, GetBuffer) {
   fake_sco_out.direction = CRAS_STREAM_OUTPUT;
   iodev = hfp_alsa_iodev_create(&fake_sco_out, fake_device, fake_slc, fake_sco,
                                 NULL);
+  iodev->input_dsp_offset = 11;
+  iodev->output_mixed_offset = 22;
   iodev->get_buffer(iodev, (struct cras_audio_area**)NULL, (unsigned*)NULL);
 
   EXPECT_EQ(1, fake_get_buffer_called);
+  EXPECT_EQ(11, fake_sco_out.input_dsp_offset);
+  EXPECT_EQ(22, fake_sco_out.output_mixed_offset);
 
   hfp_alsa_iodev_destroy(iodev);
 }
@@ -397,9 +401,13 @@ TEST_F(HfpAlsaIodev, PutBuffer) {
   fake_sco_out.direction = CRAS_STREAM_OUTPUT;
   iodev = hfp_alsa_iodev_create(&fake_sco_out, fake_device, fake_slc, fake_sco,
                                 NULL);
+  iodev->input_dsp_offset = 33;
+  iodev->output_mixed_offset = 44;
   iodev->put_buffer(iodev, 0xdeadbeef);
 
   EXPECT_EQ(1, fake_put_buffer_called);
+  EXPECT_EQ(33, fake_sco_out.input_dsp_offset);
+  EXPECT_EQ(44, fake_sco_out.output_mixed_offset);
 
   hfp_alsa_iodev_destroy(iodev);
 }

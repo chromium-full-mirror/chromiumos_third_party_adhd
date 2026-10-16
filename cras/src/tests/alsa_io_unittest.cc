@@ -247,10 +247,6 @@ static cras_volume_curve default_curve = {
     .get_dBFS = fake_get_dBFS,
 };
 
-unsigned int cras_iodev_max_stream_offset(const struct cras_iodev* iodev) {
-  return 0;
-}
-
 static struct cras_iodev* alsa_iodev_create_with_default_parameters(
     size_t card_index,
     const char* dev_id,
@@ -2429,6 +2425,28 @@ TEST_F(AlsaFreeRunTestSuite, OutputUnderrun) {
   EXPECT_EQ(offset, cras_alsa_resume_appl_ptr_ahead);
 
   free(zeros);
+}
+
+TEST_F(AlsaFreeRunTestSuite, PutBufferKeepsFramesMixedBeyondWritten) {
+  // 2 channels of S16: one frame per uint32_t.
+  uint32_t sample[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+  struct cras_audio_area* area =
+      (struct cras_audio_area*)calloc(1, sizeof(*area));
+  area->frames = 8;
+  aio.common.base.area = area;
+  aio.common.sample_buf = (uint8_t*)sample;
+  aio.common.mmap_buf = cras_alsa_mmap_begin_buffer;
+
+  // Commit 5 frames while a stream ahead of the write point mixed 3 more.
+  aio.common.base.output_mixed_offset = 3;
+  EXPECT_EQ(0, put_buffer(&aio.common.base, 5));
+
+  const uint32_t committed[5] = {1, 2, 3, 4, 5};
+  const uint32_t kept[3] = {6, 7, 8};
+  EXPECT_EQ(0,
+            memcmp(committed, cras_alsa_mmap_begin_buffer, sizeof(committed)));
+  EXPECT_EQ(0, memcmp(kept, sample, sizeof(kept)));
+  free(area);
 }
 
 TEST(AlsaHotwordNode, HotwordTriggeredSendMessage) {

@@ -173,10 +173,18 @@ TEST_F(BtIoBasicSuite, CreateBtIo) {
   EXPECT_EQ(1, configure_dev_called_);
   bt_iodev->frames_queued(bt_iodev, &tstamp);
   EXPECT_EQ(1, frames_queued_called_);
+  bt_iodev->input_dsp_offset = 11;
+  bt_iodev->output_mixed_offset = 22;
   bt_iodev->get_buffer(bt_iodev, &fake_area, &fr);
   EXPECT_EQ(1, get_buffer_called_);
+  EXPECT_EQ(11, iodev_.input_dsp_offset);
+  EXPECT_EQ(22, iodev_.output_mixed_offset);
+  bt_iodev->input_dsp_offset = 33;
+  bt_iodev->output_mixed_offset = 44;
   bt_iodev->put_buffer(bt_iodev, fr);
   EXPECT_EQ(1, put_buffer_called_);
+  EXPECT_EQ(33, iodev_.input_dsp_offset);
+  EXPECT_EQ(44, iodev_.output_mixed_offset);
   bt_iodev->close_dev(bt_iodev);
   EXPECT_EQ(1, close_dev_called_);
   EXPECT_EQ(1, cras_iodev_free_format_called);

@@ -1245,6 +1245,7 @@ int cras_iodev_open(struct cras_iodev* iodev,
   iodev->state = CRAS_IODEV_STATE_OPEN;
   iodev->highest_hw_level = 0;
   iodev->input_dsp_offset = 0;
+  iodev->output_mixed_offset = 0;
 
   ewma_power_init(&iodev->ewma, iodev->format->format,
                   iodev->format->frame_rate);
@@ -1495,6 +1496,9 @@ int cras_iodev_put_output_buffer(struct cras_iodev* iodev,
     rate_estimator_reset_rate(iodev->rate_est, iodev->format->frame_rate);
   }
 
+  // Computed here because wrapped iodevs (bt_io -> hfp_alsa_io -> alsa_io)
+  // own no streams.
+  iodev->output_mixed_offset = cras_iodev_max_stream_offset(iodev);
   return iodev->put_buffer(iodev, nframes);
 }
 
@@ -1702,6 +1706,7 @@ int cras_iodev_fill_odev_zeros(struct cras_iodev* odev,
     if (processing) {
       rc = cras_iodev_put_output_buffer(odev, buf, frames_writable, NULL, NULL);
     } else {
+      odev->output_mixed_offset = cras_iodev_max_stream_offset(odev);
       rc = odev->put_buffer(odev, frames_writable);
     }
     if (rc < 0) {

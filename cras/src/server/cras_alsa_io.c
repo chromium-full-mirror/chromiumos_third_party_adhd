@@ -519,11 +519,12 @@ static int put_buffer(struct cras_iodev* iodev, unsigned nwritten) {
       dest[i] = src[i];
     }
 
-    unsigned int max_offset = cras_iodev_max_stream_offset(iodev);
-    if (max_offset) {
+    // Keep the frames streams already mixed beyond nwritten. The count is not
+    // computed here: a wrapped iodev owns no streams (b/551616979).
+    if (iodev->output_mixed_offset) {
       memmove(aio->common.sample_buf,
               aio->common.sample_buf + nwritten * format_bytes,
-              max_offset * format_bytes);
+              iodev->output_mixed_offset * format_bytes);
     }
   } else {
     // CRAS applied input DSP on the uncommitted data, move then to the

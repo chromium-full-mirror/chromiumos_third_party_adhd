@@ -422,6 +422,7 @@ static int get_buffer(struct cras_iodev* iodev,
   if (!dev) {
     return -EINVAL;
   }
+  cras_iodev_forward_buffer_offsets(iodev, dev);
   return dev->get_buffer(dev, area, frames);
 }
 
@@ -430,6 +431,7 @@ static int put_buffer(struct cras_iodev* iodev, unsigned nwritten) {
   if (!dev) {
     return -EINVAL;
   }
+  cras_iodev_forward_buffer_offsets(iodev, dev);
   return dev->put_buffer(dev, nwritten);
 }
 

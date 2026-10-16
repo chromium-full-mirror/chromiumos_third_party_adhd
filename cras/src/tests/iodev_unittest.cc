@@ -76,6 +76,8 @@ static int iodev_buffer_size;
 static uint8_t audio_buffer[BUFFER_SIZE];
 static struct cras_audio_area* audio_area;
 static unsigned int put_buffer_nframes;
+static unsigned int put_buffer_output_mixed_offset;
+static unsigned int buffer_share_id_offset_ret;
 static int is_free_running_ret;
 static int no_stream_called;
 static int no_stream_enable;
@@ -176,6 +178,8 @@ void ResetStubData() {
     audio_area = NULL;
   }
   put_buffer_nframes = 0;
+  put_buffer_output_mixed_offset = 0;
+  buffer_share_id_offset_ret = 0;
   is_free_running_ret = 0;
   no_stream_called = 0;
   no_stream_enable = 0;
@@ -550,6 +554,7 @@ static int get_buffer(cras_iodev* iodev,
 
 static int put_buffer(struct cras_iodev* iodev, unsigned int nframes) {
   put_buffer_nframes = nframes;
+  put_buffer_output_mixed_offset = iodev->output_mixed_offset;
   if (audio_area) {
     free(audio_area);
     audio_area = NULL;
@@ -620,6 +625,47 @@ TEST(IoDevPutOutputBuffer, SystemMuted) {
   EXPECT_EQ(20, cras_mix_mute_count);
   EXPECT_EQ(20, put_buffer_nframes);
   EXPECT_EQ(20, rate_estimator_get_last_add_frames_value_for_test(re.get()));
+}
+
+TEST(IoDevPutOutputBuffer, PassesOutputMixedOffsetToIodev) {
+  struct cras_audio_format fmt;
+  struct cras_iodev iodev;
+  struct cras_ionode ionode;
+  struct cras_rstream rstream;
+  struct dev_stream stream;
+  uint8_t* frames = reinterpret_cast<uint8_t*>(0x44);
+
+  ResetStubData();
+  memset(&iodev, 0, sizeof(iodev));
+  memset(&ionode, 0, sizeof(ionode));
+  memset(&stream, 0, sizeof(stream));
+  rstream.stream_id = 123;
+  stream.stream = &rstream;
+  stream.is_running = 1;
+
+  fmt.format = SND_PCM_FORMAT_S16_LE;
+  fmt.frame_rate = 48000;
+  fmt.num_channels = 2;
+  iodev.format = &fmt;
+  iodev.direction = CRAS_STREAM_OUTPUT;
+  iodev.get_buffer = get_buffer;
+  iodev.put_buffer = put_buffer;
+  iodev.nodes = &ionode;
+  iodev.active_node = &ionode;
+  iodev.active_node->type = CRAS_NODE_TYPE_INTERNAL_SPEAKER;
+  iodev.active_node->dev = &iodev;
+  DL_APPEND(iodev.streams, &stream);
+  TestRateEstimator re;
+  iodev.rate_est = re.get();
+
+  // The stream has mixed 7 frames beyond the ones being committed now.
+  buffer_share_id_offset_ret = 7;
+  EXPECT_EQ(0, cras_iodev_put_output_buffer(&iodev, frames, 20, NULL, nullptr));
+  EXPECT_EQ(7, put_buffer_output_mixed_offset);
+
+  // Same when zeros are filled without processing.
+  EXPECT_EQ(20, cras_iodev_fill_odev_zeros(&iodev, 20, false));
+  EXPECT_EQ(7, put_buffer_output_mixed_offset);
 }
 
 TEST(IoDevPutOutputBuffer, MuteForVolume) {
@@ -2888,7 +2934,7 @@ int buffer_share_rm_id(struct buffer_share* mix, unsigned int id) {
 
 unsigned int buffer_share_id_offset(const struct buffer_share* mix,
                                     unsigned int id) {
-  return 0;
+  return buffer_share_id_offset_ret;
 }
 
 // From cras_system_state.

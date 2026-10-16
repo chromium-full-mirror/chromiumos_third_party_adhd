@@ -437,6 +437,9 @@ struct cras_iodev {
   // The number of frames in the HW buffer that have already
   // been processed by the input DSP.
   unsigned int input_dsp_offset;
+  // Playback: the number of frames beyond the ones being committed that
+  // streams have already mixed. Set right before put_buffer().
+  unsigned int output_mixed_offset;
   // The value indicates which type of ramp the device
   // should perform when some samples are ready for playback.
   enum CRAS_IODEV_RAMP_REQUEST initial_ramp_request;
@@ -662,6 +665,15 @@ unsigned int cras_iodev_stream_offset(struct cras_iodev* iodev,
 
 // Get the maximum offset of any stream into the dev's buffer.
 unsigned int cras_iodev_max_stream_offset(const struct cras_iodev* iodev);
+
+// Iodevs that delegate get_buffer()/put_buffer() to another iodev call this
+// first: streams, and thus these offsets, live on the outermost iodev only.
+static inline void cras_iodev_forward_buffer_offsets(
+    const struct cras_iodev* from,
+    struct cras_iodev* to) {
+  to->input_dsp_offset = from->input_dsp_offset;
+  to->output_mixed_offset = from->output_mixed_offset;
+}
 
 // Tell the device how many frames the given stream wrote.
 void cras_iodev_stream_written(struct cras_iodev* iodev,

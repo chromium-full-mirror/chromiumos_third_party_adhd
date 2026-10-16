@@ -360,6 +360,7 @@ static int hfp_alsa_get_buffer(struct cras_iodev* iodev,
     return cras_iodev_sr_bt_adapter_get_buffer(hfp_alsa_io->sr_bt, area,
                                                frames);
   } else {
+    cras_iodev_forward_buffer_offsets(iodev, aio);
     return aio->get_buffer(aio, area, frames);
   }
 }
@@ -371,6 +372,7 @@ static int hfp_alsa_put_buffer(struct cras_iodev* iodev, unsigned nwritten) {
   if (hfp_alsa_io->sr_bt) {
     return cras_iodev_sr_bt_adapter_put_buffer(hfp_alsa_io->sr_bt, nwritten);
   } else {
+    cras_iodev_forward_buffer_offsets(iodev, aio);
     return aio->put_buffer(aio, nwritten);
   }
 }
