@@ -402,11 +402,18 @@ static void dsp_util_deinterleave_s16le(int16_t* input,
   }
 }
 
-static void dsp_util_deinterleave_s24le(int32_t* input,
+/* Deinterleaves SND_PCM_FORMAT_S24_LE samples: signed 24-bit little-endian
+ * values stored in the low 3 bytes of each 4-byte slot (high byte ignored).
+ * Copies the 3 payload bytes into the upper 3 bytes of a zeroed int32_t
+ * (scaling by 2^8 and aligning the 24-bit sign bit to bit 31) before
+ * normalizing by 2^31.
+ */
+static void dsp_util_deinterleave_s24le(uint8_t* input,
                                         float* const* output,
                                         int channels,
                                         int frames) {
   float* output_ptr[channels];
+  int32_t sample;
   int i, j;
 
   for (i = 0; i < channels; i++) {
@@ -414,8 +421,10 @@ static void dsp_util_deinterleave_s24le(int32_t* input,
   }
 
   for (i = 0; i < frames; i++) {
-    for (j = 0; j < channels; j++, input++) {
-      *(output_ptr[j]++) = (*input << 8) / 2147483648.0f;
+    for (j = 0; j < channels; j++, input += 4) {
+      sample = 0;
+      memcpy((uint8_t*)&sample + 1, input, 3);
+      *(output_ptr[j]++) = sample / 2147483648.0f;
     }
   }
 }
@@ -469,7 +478,7 @@ int dsp_util_deinterleave(uint8_t* input,
       dsp_util_deinterleave_s16le((int16_t*)input, output, channels, frames);
       break;
     case SND_PCM_FORMAT_S24_LE:
-      dsp_util_deinterleave_s24le((int32_t*)input, output, channels, frames);
+      dsp_util_deinterleave_s24le(input, output, channels, frames);
       break;
     case SND_PCM_FORMAT_S24_3LE:
       dsp_util_deinterleave_s243le(input, output, channels, frames);

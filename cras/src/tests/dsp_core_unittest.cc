@@ -230,6 +230,86 @@ TEST(InterleaveTest, S24LE) {
   EXPECT_NEAR(1.0f, out_ch1[3], 1e-6f);
 }
 
+TEST(InterleaveTest, DeinterleaveS24LEEdgeCases) {
+  // Exact 1-LSB boundaries, ignored high-byte padding/sign-extension,
+  // and asymmetric byte patterns. Every 24-bit signed integer is exact in
+  // IEEE-754 float (24-bit significand).
+  constexpr int kNumSamples = 11;
+  uint8_t raw[kNumSamples * 4] = {
+      0x00, 0x00, 0x00, 0x00,  // 0
+      0x01, 0x00, 0x00, 0x00,  // +1
+      0xff, 0xff, 0xff, 0x00,  // -1 (zero-padded)
+      0xff, 0xff, 0xff, 0xff,  // -1 (sign-extended)
+      0x00, 0x00, 0x80, 0x00,  // -2^23 (zero-padded min)
+      0x00, 0x00, 0x80, 0xff,  // -2^23 (sign-extended min)
+      0x01, 0x00, 0x80, 0x00,  // -(2^23 - 1)
+      0xff, 0xff, 0x7f, 0x00,  // +(2^23 - 1) (max)
+      0xff, 0xff, 0x7f, 0xaa,  // +(2^23 - 1) (arbitrary high byte)
+      0x12, 0x34, 0x56, 0x00,  // +0x563412 = +5649426
+      0x12, 0x34, 0x9a, 0xff,  // -0x65cbee = -6671342
+  };
+  const float expected[kNumSamples] = {
+      0.0f,
+      1.0f / 8388608.0f,
+      -1.0f / 8388608.0f,
+      -1.0f / 8388608.0f,
+      -1.0f,
+      -1.0f,
+      -8388607.0f / 8388608.0f,
+      8388607.0f / 8388608.0f,
+      8388607.0f / 8388608.0f,
+      5649426.0f / 8388608.0f,
+      -6671342.0f / 8388608.0f,
+  };
+  float out[kNumSamples] = {0};
+  float* out_ptr[] = {out};
+  EXPECT_EQ(0, dsp_util_deinterleave(raw, out_ptr, 1, SND_PCM_FORMAT_S24_LE,
+                                     kNumSamples));
+  for (int i = 0; i < kNumSamples; i++) {
+    EXPECT_FLOAT_EQ(expected[i], out[i]) << "at index " << i;
+  }
+
+  // Unaligned uint8_t* input buffer (guaranteed 1-byte misaligned).
+  alignas(4) uint8_t unaligned[1 + 8] = {
+      0xde,                    // 1-byte misalignment prefix
+      0x12, 0x34, 0x56, 0xab,  // +5649426
+      0x12, 0x34, 0x9a, 0x55,  // -6671342
+  };
+  float unaligned_out[2] = {0};
+  float* unaligned_ptr[] = {unaligned_out};
+  EXPECT_EQ(0, dsp_util_deinterleave(unaligned + 1, unaligned_ptr, 1,
+                                     SND_PCM_FORMAT_S24_LE, 2));
+  EXPECT_FLOAT_EQ(5649426.0f / 8388608.0f, unaligned_out[0]);
+  EXPECT_FLOAT_EQ(-6671342.0f / 8388608.0f, unaligned_out[1]);
+
+  // Multi-channel stride (3 channels x 2 frames).
+  uint8_t ch3_in[3 * 2 * 4] = {
+      // Frame 0: ch0=+0.5, ch1=-0.5, ch2=+1 LSB
+      0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0xc0, 0xff, 0x01, 0x00, 0x00, 0x77,
+      // Frame 1: ch0=-1.0, ch1=0.0, ch2=-1 LSB
+      0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0xee, 0xff, 0xff, 0xff, 0x00,
+  };
+  float ch0[2] = {0};
+  float ch1[2] = {0};
+  float ch2[2] = {0};
+  float* ch3_ptr[] = {ch0, ch1, ch2};
+  EXPECT_EQ(
+      0, dsp_util_deinterleave(ch3_in, ch3_ptr, 3, SND_PCM_FORMAT_S24_LE, 2));
+  EXPECT_FLOAT_EQ(0.5f, ch0[0]);
+  EXPECT_FLOAT_EQ(-0.5f, ch1[0]);
+  EXPECT_FLOAT_EQ(1.0f / 8388608.0f, ch2[0]);
+  EXPECT_FLOAT_EQ(-1.0f, ch0[1]);
+  EXPECT_FLOAT_EQ(0.0f, ch1[1]);
+  EXPECT_FLOAT_EQ(-1.0f / 8388608.0f, ch2[1]);
+
+  // Zero frames leaves output untouched.
+  float sentinel[1] = {42.0f};
+  float* sentinel_ptr[] = {sentinel};
+  EXPECT_EQ(
+      0, dsp_util_deinterleave(raw, sentinel_ptr, 1, SND_PCM_FORMAT_S24_LE, 0));
+  EXPECT_FLOAT_EQ(42.0f, sentinel[0]);
+}
+
 TEST(InterleaveTest, S243LE) {
   const int FRAMES = 4;
   float ch0[FRAMES] = {-1.5f, -1.0f, 0.0f, 1.0f};
