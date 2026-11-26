@@ -102,10 +102,7 @@ const char kHfpScoReconnectionOnBusy[] = "Cras.HfpScoReconnectionOnBusy";
 const char kHfpBatteryIndicatorSupported[] =
     "Cras.HfpBatteryIndicatorSupported";
 const char kHfpBatteryReport[] = "Cras.HfpBatteryReport";
-const char kHfpWidebandSpeechSupported[] = "Cras.HfpWidebandSpeechSupported";
 const char kHfpWidebandSpeechPacketLoss[] = "Cras.HfpWidebandSpeechPacketLoss";
-const char kHfpWidebandSpeechSelectedCodec[] =
-    "Cras.kHfpWidebandSpeechSelectedCodec";
 const char kHfpMicSuperResolutionStatus[] = "Cras.HfpMicSuperResolutionStatus";
 const char kCrasDlcManagerStatus[] = "Cras.DlcManagerStatus";
 const char kWakeDelay[] = "Cras.WakeDelay";
@@ -152,8 +149,6 @@ enum CRAS_SERVER_METRICS_TYPE {
   BT_SCO_CONNECTION_ERROR,
   BT_SCO_RECONNECTION_ON_BUSY,
   BT_WIDEBAND_PACKET_LOSS,
-  BT_WIDEBAND_SUPPORTED,
-  BT_WIDEBAND_SELECTED_CODEC,
   BT_MIC_SUPER_RESOLUTION_STATUS,
   BUSYLOOP,
   BUSYLOOP_LENGTH,
@@ -709,41 +704,6 @@ int cras_server_metrics_hfp_packet_loss(float packet_loss_ratio) {
   if (err < 0) {
     syslog(LOG_WARNING,
            "Failed to send metrics message: BT_WIDEBAND_PACKET_LOSS");
-    return err;
-  }
-  return 0;
-}
-
-int cras_server_metrics_hfp_wideband_support(bool supported) {
-  struct cras_server_metrics_message msg = CRAS_MAIN_MESSAGE_INIT;
-  union cras_server_metrics_data data;
-  int err;
-
-  data.value = supported;
-  init_server_metrics_msg(&msg, BT_WIDEBAND_SUPPORTED, data);
-
-  err = cras_server_metrics_message_send((struct cras_main_message*)&msg);
-  if (err < 0) {
-    syslog(LOG_WARNING,
-           "Failed to send metrics message: BT_WIDEBAND_SUPPORTED");
-    return err;
-  }
-  return 0;
-}
-
-int cras_server_metrics_hfp_wideband_selected_codec(int codec) {
-  struct cras_server_metrics_message msg = CRAS_MAIN_MESSAGE_INIT;
-  union cras_server_metrics_data data;
-  int err;
-
-  data.value = codec;
-  init_server_metrics_msg(&msg, BT_WIDEBAND_SELECTED_CODEC, data);
-
-  err = cras_server_metrics_message_send((struct cras_main_message*)&msg);
-  if (err < 0) {
-    syslog(LOG_WARNING,
-           "Failed to send metrics message: "
-           "BT_WIDEBAND_SELECTED_CODEC");
     return err;
   }
   return 0;
@@ -2125,14 +2085,6 @@ static void handle_metrics_message(struct cras_main_message* msg, void* arg) {
     case BT_WIDEBAND_PACKET_LOSS:
       cras_metrics_log_histogram(kHfpWidebandSpeechPacketLoss,
                                  metrics_msg->data.value, 0, 1000, 20);
-      break;
-    case BT_WIDEBAND_SUPPORTED:
-      cras_metrics_log_sparse_histogram(kHfpWidebandSpeechSupported,
-                                        metrics_msg->data.value);
-      break;
-    case BT_WIDEBAND_SELECTED_CODEC:
-      cras_metrics_log_sparse_histogram(kHfpWidebandSpeechSelectedCodec,
-                                        metrics_msg->data.value);
       break;
     case BT_MIC_SUPER_RESOLUTION_STATUS:
       metrics_hfp_mic_sr_status(metrics_msg->data.device_data);

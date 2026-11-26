@@ -260,17 +260,6 @@ struct hfp_slc_handle* hfp_slc_create(int fd,
   return NULL;
 }
 
-int hfp_slc_get_selected_codec(struct hfp_slc_handle* handle) {
-  return HFP_CODEC_ID_CVSD;
-}
-int hfp_slc_get_ag_codec_negotiation_supported(struct hfp_slc_handle* handle) {
-  return 1;
-}
-
-int hfp_slc_get_hf_codec_negotiation_supported(struct hfp_slc_handle* handle) {
-  return 1;
-}
-
 int hfp_slc_get_hf_supports_battery_indicator(struct hfp_slc_handle* handle) {
   return 0;
 }
@@ -315,10 +304,6 @@ bool cras_system_get_bt_wbs_enabled() {
 
 bool cras_system_get_bt_hfp_offload_finch_applied() {
   return bt_hfp_offload_finch_applied;
-}
-
-int cras_server_metrics_hfp_wideband_selected_codec(int codec) {
-  return HFP_CODEC_ID_MSBC;
 }
 
 }  // extern "C"

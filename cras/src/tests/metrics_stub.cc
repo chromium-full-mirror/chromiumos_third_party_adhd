@@ -85,10 +85,6 @@ int cras_server_metrics_hfp_battery_report(int battery_report) {
   return 0;
 }
 
-int cras_server_metrics_hfp_wideband_support(bool supported) {
-  return 0;
-}
-
 int cras_server_metrics_hfp_packet_loss(float packet_loss_ratio) {
   return 0;
 }

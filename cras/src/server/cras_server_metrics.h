@@ -125,12 +125,6 @@ int cras_server_metrics_hfp_battery_indicator(int battery_indicator_support);
  * event reported. Apple or HFP.*/
 int cras_server_metrics_hfp_battery_report(int battery_report);
 
-// Logs if connected HFP headset supports wideband speech.
-int cras_server_metrics_hfp_wideband_support(bool supported);
-
-// Logs the selected codec in HFP wideband connection.
-int cras_server_metrics_hfp_wideband_selected_codec(int codec);
-
 // Logs the number of packet loss per 1000 packets under HFP capture.
 int cras_server_metrics_hfp_packet_loss(float packet_loss_ratio);
 
